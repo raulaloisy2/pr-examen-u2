@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TBOI: Bomberman</title>
+</head>
+
+
+<body style="background-color: black;">
+
+ <canvas id="mycanvas"  width="1000" height="600"> </canvas>
+     <audio   id="miAudio">
+        <source src="files/sounds/InnocenceGlitched.mp3"" type="audio/mpeg">
+    </audio>
+</body>
+
+
+<script>
+//Variables
+    var canvas = document.getElementById('mycanvas'); 
+    var ctx = canvas.getContext('2d');
+    var musica = document.getElementById('miAudio');
+    var playerX=0 , playerY=0;
+
+
+    //Clases
+    class GenerarPared {
+        constructor(x, y, w, h) {
+            this.x = x;
+            this.y = y;
+            this.w = w;
+            this.h = h;
+        }
+
+
+        pintar(ctx) {
+            ctx.fillStyle = "Gray";
+            ctx.fillRect(this.x, this.y, this.w, this.h);
+        }
+
+        colisionConCuadro(objeto) {
+            console.log(objeto.x)
+            if(playerX < this.x + this.w   && 
+                playerY +objeto.w >this.x &&   
+                playerY < this.y + this.h  &&   
+                playerY + objeto.w > this.y){ 
+                // Colisión detectada
+                switch (dir) {
+                    case 87: // Tecla "W"
+                    y += speed*2;                       
+                        break;
+                    case 83: // Tecla "S"
+                    y -= speed*2;
+                        break;
+                    case 68: // Tecla "D"
+                        x -= speed*2;
+                        break;
+                    case 65: // Tecla "A"
+                        x += speed*2;
+                        break;
+                    default:
+                        break;
+                }
+                dir=0;
+                return true;
+            }
+            return false; // No hay colisión
+        }
+
+        static pintarParedes(ctx, paredes) {
+            for (let i = 0; i < paredes.length; i++) {
+                paredes[i].pintar(ctx);
+            }
+        }
+    }
+
+    class GenerarJugador {
+        constructor( w, h,) {
+            this.w=w;
+            this.h=h;
+        }
+    
+        pintar(ctx) {
+            ctx.fillStyle = random_rgba();
+            ctx.fillRect(playerX, playerY, this.w,this.h);
+        }
+    }
+
+//FUNCIONES 
+    function drawBackground(){
+        
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.fillRect(0,0,canvas.width,canvas.height);
+        ctx.closePath();
+
+    }
+
+    function verificarColisiones() {
+        for (var i = 0; i < walls.length; i++) {
+            if (walls[i].colisionConCuadro(objeto)) {
+                // Realiza alguna acción en caso de colisión
+                console.log("Colisión detectada con la pared " + i);
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+    //Pintar Fondo
+    drawBackground();
+</script>
+</html>
