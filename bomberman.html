@@ -63,7 +63,7 @@
         this.destruido = false;
 
        
-            if (rompible) {
+            if (this.rompible) {
                // this.destruido=true;
                 if(!this.destruido){
                     this.image = new Image();
@@ -135,7 +135,7 @@
             this.x = x;
             this.y = y;
             this.size = 35;
-            this.frames = 100; // Número de cuadros de animación
+            this.frames = 90; // Número de cuadros de animación
             this.currentFrame = 0;
             this.explosion = false;
             this.explosionDelay = 1000; // Retraso de 1 segundo (1000 ms) antes de la explosión
@@ -158,37 +158,46 @@
             this.explosion = false;
         }
 
+
         crearExplosionEnDireccion(dx, dy) {
+
             let explosionX = this.x;
             let explosionY = this.y;
-        
-            for (let i = 0; i < 2; i++) {
-                explosionX += dx * 40;
-                explosionY += dy * 40;
-        
-                // Verifica si la explosión alcanza una pared rompible en la posición actual
-                const paredActual = buscarPared(explosionX, explosionY);
-        
-                if (paredActual && paredActual.rompible) {
-                    if (!paredActual.destruido) {
-                        // Marca la pared actual como destruida
-                        paredActual.destruido = true;
-        
-                        // Cambia la imagen de la pared de roca a vacío
-                        paredActual.image.src = "files/img/vacio.png"; // Asegúrate de que la ruta sea correcta
+
+
+            setTimeout(()=>{
+
+                for (let i = 0; i < 2; i++) {
+                    explosionX += dx * 40;
+                    explosionY += dy * 40;
+            
+                    // Verifica si la explosión alcanza una pared rompible en la posición actual
+                    const paredActual = buscarPared(explosionX, explosionY);
+            
+                    if (paredActual && paredActual.rompible) {
+                        if (!paredActual.destruido) {
+                            // Marca la pared actual como destruida
+                            paredActual.destruido = true;
+            
+                            // Cambia la imagen de la pared de roca a vacío
+                            paredActual.image.src = "files/img/vacio.png"; // Asegúrate de que la ruta sea correcta
+                        }
+                    }
+            
+                    // Dibuja la explosión en esa posición
+                    ctx.fillStyle = "red"; // Color de la explosión
+                    ctx.fillRect(explosionX + 12, explosionY + 15, 20, 20); // Tamaño del cuadro rojo
+            
+                    // Verifica si la explosión alcanza al jugador
+                    if (explosionX === playerX && explosionY === playerY) {
+                        // El jugador ha sido alcanzado por la explosión, puedes hacer algo aquí
+                        console.log("te pegó");
                     }
                 }
+
+            },2500);
         
-                // Dibuja la explosión en esa posición
-                ctx.fillStyle = "red"; // Color de la explosión
-                ctx.fillRect(explosionX + 12, explosionY + 15, 20, 20); // Tamaño del cuadro rojo
-        
-                // Verifica si la explosión alcanza al jugador
-                if (explosionX === playerX && explosionY === playerY) {
-                    // El jugador ha sido alcanzado por la explosión, puedes hacer algo aquí
-                    console.log("te pegó");
-                }
-            }
+
         }
         
         
