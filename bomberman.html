@@ -8,11 +8,9 @@
 
 <canvas id="mycanvas"  width="1000" height="600"> </canvas>
 <audio   id="miAudio">
-       <source src="files/sounds/InnocenceGlitched.mp3" type="audio/mpeg"> </audio>
-
-
-
-
+     <source src="files/sounds/InnocenceGlitched.mp3" type="audio/mpeg"> </audio>
+<audio   id="miBomba">
+     <source src="files/sounds/bomba.mp3" type="audio/mpeg"> </audio>
 
 
 <body style="background-color: black;">
@@ -27,8 +25,13 @@
     var canvas = document.getElementById('mycanvas'); 
     var ctx = canvas.getContext('2d');
     var musica = document.getElementById('miAudio');
+    var sonidoBomba = document.getElementById('miBomba');
     var imagenPlayer = new Image();
     imagenPlayer.src= "files/img/isaac.png";
+    var imagenBomba = new Image();
+    imagenBomba.src= "files/img/bomba.png";
+    var imagenExplosion = new Image();
+    imagenBoom.src= "files/img/boom.png";
     
     
     //Gameplay
@@ -37,7 +40,7 @@
     var pause = false;
     var speed = 2;
     var dir=0;
-    
+    var bombaActual = null;
     
     //Clases
 
@@ -50,28 +53,34 @@
     }
 
     class GenerarPared {
-        constructor(x, y,rompible) {
-            this.x = x;
-            this.y = y;
-            this.w = 40;
-            this.h = 40;
-            this.rompible=rompible;
+           constructor(x, y, rompible) {
+        this.x = x;
+        this.y = y;
+        this.w = 40;
+        this.h = 40;
+        this.rompible = rompible;
+        this.destruido = false;
 
-            if(rompible){
+        if (!this.destruido) {
+            if (rompible) {
                 this.image = new Image();
                 this.image.src = "files/img/roca.png"; // Asegúrate de que la ruta sea correcta
-            }else{
+            } else {
                 this.image = new Image();
-                this.image.src = "files/img/metal.png"; // Asegúrate de que la ruta sea correcta 
+                this.image.src = "files/img/metal.png"; // Asegúrate de que la ruta sea correcta
             }
-
-    
-            // Agrega un evento onload para asegurarte de que la imagen se haya cargado correctamente
-            this.image.onload = () => {
-                // Llama a pintar después de cargar la imagen
-                this.pintar(ctx);
-            };
+        } else {
+            this.image = new Image();
+            this.image.src = "files/img/.png";
         }
+
+        // Agrega un evento onload para asegurarte de que la imagen se haya cargado correctamente
+        this.image.onload = () => {
+            // Llama a pintar después de cargar la imagen
+            this.pintar(ctx);
+        };
+    }
+
     
         pintar(ctx) {
             // Verifica que la imagen se haya cargado correctamente antes de intentar dibujarla
@@ -79,33 +88,40 @@
                 ctx.drawImage(this.image, this.x, this.y, 45, 45);
             }
         }
+
         //EVITA ATRAVESAR ELEMENTOS
         colisionConCuadro(player) {
             console.log(player.x)
-            if (playerX + player.w > this.x && 
-            playerX < this.x + this.w &&
-            playerY + player.h > this.y &&
-            playerY < this.y + this.h) {
-            // Colisión detectada
-            switch (dir) {
-                case 87: // Tecla "W"
-                    playerY += speed * 2;
-                    break;
-                case 83: // Tecla "S"
-                    playerY -= speed * 2;
-                    break;
-                case 68: // Tecla "D"
-                    playerX -= speed * 2;
-                    break;
-                case 65: // Tecla "A"
-                    playerX += speed * 2;
-                    break;
-                default:
-                    break;
+
+            if (!this.destruido){
+
+                if (playerX + player.w > this.x && 
+                playerX < this.x + this.w &&
+                playerY + player.h > this.y &&
+                playerY < this.y + this.h) {
+                // Colisión detectada
+                switch (dir) {
+                    case 87: // Tecla "W"
+                        playerY += speed * 2;
+                        break;
+                    case 83: // Tecla "S"
+                        playerY -= speed * 2;
+                        break;
+                    case 68: // Tecla "D"
+                        playerX -= speed * 2;
+                        break;
+                    case 65: // Tecla "A"
+                        playerX += speed * 2;
+                        break;
+                    default:
+                        break;
+                }
+                dir = 0;
+                return true;
             }
-            dir = 0;
-            return true;
-        }
+            
+            }
+
             return false; // No hay colisión
         }
 
@@ -117,6 +133,35 @@
     }
 
 
+    class Bomba {
+        constructor(x, y) {
+            this.x = x;
+            this.y = y;
+            this.size = 35;
+            this.frames = 145; // Aumentamos el número de cuadros de animación (145 originales + 50 nuevos)
+            this.currentFrame = 0;
+            this.explosion = false;
+        }
+    
+        // Método para actualizar la animación de la bomba
+        update() {
+            if (!this.explosion) {
+                // Incrementa el cuadro actual
+                this.currentFrame++;
+    
+                // Si se ha alcanzado el último cuadro, marca la bomba como explotada
+                if (this.currentFrame === this.frames) {
+                    this.explosion = true;
+                }
+            }
+        }
+
+        reiniciar() {
+            this.currentFrame = 0;
+            this.explosion = false;
+        }
+    
+    }
 
     //OBJETOS DECLARADOS
     var player = new GenerarJugador(30,30);
@@ -124,6 +169,8 @@
     let walls = []
     paredesOrilla(walls);
     paredesJuego(walls);
+    var bomba = null;
+
    // walls.push(new GenerarPared(0, 0,false));
    // walls.push(new GenerarPared(0, canvas.height-20,false));
    // walls.push(new GenerarPared(200,200,false));
@@ -203,7 +250,7 @@
     function verificarColisiones() {
         for (var i = 0; i < walls.length; i++) {
             if (walls[i].colisionConCuadro(player)) {
-                // Realiza alguna acción en caso de colisión
+                //walls[i].destruido=true;
                 console.log("Colisión detectada con la pared " + i);
             }
         }
@@ -218,70 +265,81 @@
 
     }
     //FUNCION REPINTAR
-    function repaint(){
-        if (!pause){
-
+    function repaint() {
+        if (!pause) {
             drawBackground();
-            //Dibujar PLayer
-            ctx.drawImage(imagenPlayer, playerX, playerY,40,45);
-
+            // Dibujar Player
+            ctx.drawImage(imagenPlayer, playerX, playerY, 40, 45);
+    
             ctx.fillStyle = "Black";
-           
-            //Dibujar Paredes
+            // Dibujar Paredes
             GenerarPared.pintarParedes(ctx, walls);
-           
-        }else{
-            ctx.fillStyle="Black";
+    
+            // Validar si la bomba actual existe y no ha explotado
+            if (bombaActual !== null) {
+                if (!bombaActual.explosion) {
+                    ctx.drawImage(imagenBomba, bombaActual.x, bombaActual.y, bombaActual.size, bombaActual.size);
+                } else {
+                    // Dibuja la explosión usando la nueva imagen y ajustando el tamaño según sea necesario
+                   // ctx.drawImage(imagenExplosion, bombaActual.x - 5, bombaActual.y - 5, bombaActual.size + 10, bombaActual.size + 10);
+                }
+            }
+        } else {
+            ctx.fillStyle = "Black";
             ctx.font = "30px Arial";
-            ctx.fillText("P A U S A ", 180 , 250);
-            ctx.fillStyle="rgba(138, 196, 172,0.1)";
-            ctx.fillRect(0,0,500,500);
-        
-        };
-     
-      
-                
-    };
+            ctx.fillText("P A U S A ", 180, 250);
+            ctx.fillStyle = "rgba(138, 196, 172,0.1)";
+            ctx.fillRect(0, 0, 500, 500);
+        }
+    }
+    
     //Pintar Fondo
     drawBackground();
     //LECTURA DEL TECLADO
     document.addEventListener("keydown", (e) => {
 
-             musica.play();
-            console.log(e.keyCode);
+       
+        //musica.play();        
+        console.log(e.keyCode);
 
-            switch(e.keyCode){
-                case 87:
-                dir=e.keyCode;
-                    playerY-=speed;
-                    break;
-                case 65:    
-                dir=e.keyCode;
-                    playerX-=speed;
-                    break;
-                case 83:
-                dir=e.keyCode;
-                    playerY+=speed;
-                    break;
-                case 68:
-                dir=e.keyCode;
-                    playerX+8;
-                    break;
-                    case 81:
-                    console.log ("Pausa");
-                    if(!pause){
-                        pause=true;
-                    }
-                    else{
-                        pause=false;
-                    }
-                    break;
+        if (e.keyCode === 69 && bombaActual === null) {        
+            const bombaX = Math.floor((playerX + 20) / 40) * 40; // Centra la bomba en cuadrículas de 40x40
+            const bombaY = Math.floor((playerY + 20) / 40) * 40; // Centra la bomba en cuadrículas
+            bombaActual = new Bomba(bombaX, bombaY);
+                }
 
-                default:
-                    break;
-            };
-    
-    });
+        switch(e.keyCode){
+            case 87:
+            dir=e.keyCode;
+                playerY-=speed;
+                break;
+            case 65:    
+            dir=e.keyCode;
+                playerX-=speed;
+                break;
+            case 83:
+            dir=e.keyCode;
+                playerY+=speed;
+                break;
+            case 68:
+            dir=e.keyCode;
+                playerX+8;
+                break;
+                case 81:
+                console.log ("Pausa");
+                if(!pause){
+                    pause=true;
+                }
+                else{
+                    pause=false;
+                }
+                break;
+
+            default:
+                break;
+        };
+
+});
 
     //Verifica que el player no pueda salir de la pantalla
     function update(){
@@ -344,6 +402,17 @@
                 score+=10;
             }
             */
+
+            if (bombaActual !== null) {
+                bombaActual.update();
+                sonidoBomba.play();
+
+        
+                // Si la bomba ha explotado, elimínala
+                if (bombaActual.explosion) {
+                    bombaActual = null;
+                }
+            }
             }
 
         
