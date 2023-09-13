@@ -139,7 +139,7 @@
             this.currentFrame = 0;
             this.explosion = false;
             this.explosionDelay = 1000; // Retraso de 1 segundo (1000 ms) antes de la explosión
-            this.explosionTime = 0; // Tiempo en el que ocurrió la explosión
+            this.explosionTime = 0; // Tiempo en el que ocurrió la explosión            
         }
     
         update() {
@@ -195,7 +195,7 @@
                     }
                 }
 
-            },2500);
+            },2000);
         
 
         }
@@ -317,13 +317,13 @@ function verificarColisiones() {
             // Validar si la bomba actual existe y no ha explotado
             if (bombaActual !== null) {
                 if (!bombaActual.explosion) {
+                    ultimaBomba=bombaActual;
                     ctx.drawImage(imagenBomba, bombaActual.x, bombaActual.y, bombaActual.size, bombaActual.size);
                     //
                     crearExplosionesAlrededorDeBomba(bombaActual);
-                } else {
-                    
-                   
+                } else {                        
                 }
+               pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); // 40 es el tamaño de la explosión
             }
         } else {
             ctx.fillStyle = "Black";
@@ -403,7 +403,7 @@ function crearExplosionesAlrededorDeBomba(bomba) {
     bomba.crearExplosionEnDireccion(1, 0); // Derecha
     
     ctx.fillStyle = "red";
-    ctx.fillRect(bomba.x+15 , bomba.y+15 , 20, 20);
+   // ctx.fillRect(bomba.x+15 , bomba.y+15 , 20, 20);
     // Programar la eliminación de las explosiones después de 1 segundo (1000 milisegundos)
 
 }
@@ -485,6 +485,11 @@ function eliminarExplosiones(explosiones) {
         
                 if (bombaActual.explosion) {
                     crearExplosionesAlrededorDeBomba(bombaActual);
+        
+                    if (bombaActual.framesElapsed >= bombaActual.framesToShowExplosion) {
+                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); // 40 es el tamaño de la explosión
+                    }
+        
                     bombaActual = null;
                     
                     // Verifica las colisiones después de que la bomba ha explotado
@@ -492,6 +497,8 @@ function eliminarExplosiones(explosiones) {
                     
                     // Elimina la bomba después de la explosión
                     eliminarBomba();
+                } else {
+                    ctx.drawImage(imagenBomba, bombaActual.x, bombaActual.y, bombaActual.size, bombaActual.size);
                 }
             }
         }
@@ -522,5 +529,45 @@ function eliminarExplosiones(explosiones) {
     function eliminarBomba() {
         bombaActual = null;
     }
+
+    function pintarExplosion(ctx, x, y, size) {
+        const explosionImage = new Image();
+        explosionImage.src = "files/img/boom.png"; // Ruta de la imagen de explosión
+    
+        // Verificar si hay una pared en las posiciones de la explosión
+        const arribaPared = buscarPared(x, y - size);
+        const abajoPared = buscarPared(x, y + size);
+        const izquierdaPared = buscarPared(x - size, y);
+        const derechaPared = buscarPared(x + size, y);
+    
+        // Comprobar si hay alguna pared (rompible o no) en alguna dirección
+        const arriba = arribaPared !== null;
+        const abajo = abajoPared !== null;
+        const izquierda = izquierdaPared !== null;
+        const derecha = derechaPared !== null;
+    
+        // Pintar explosión arriba si no hay una pared en esa dirección
+        if (!arriba) {
+            ctx.drawImage(explosionImage, 0, 0, 64, 64, x, y - size, size, size);
+        }
+    
+        // Pintar explosión abajo si no hay una pared en esa dirección
+        if (!abajo) {
+            ctx.drawImage(explosionImage, 0, 0, 64, 64, x, y + size, size, size);
+        }
+    
+        // Pintar explosión izquierda si no hay una pared en esa dirección
+        if (!izquierda) {
+            ctx.drawImage(explosionImage, 0, 0, 64, 64, x - size, y, size, size);
+        }
+    
+        // Pintar explosión derecha si no hay una pared en esa dirección
+        if (!derecha) {
+            ctx.drawImage(explosionImage, 0, 0, 64, 64, x + size, y, size, size);
+        }
+    }
+    
+    
+    
 </script>
 </html>
