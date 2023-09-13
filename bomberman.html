@@ -67,14 +67,14 @@
                // this.destruido=true;
                 if(!this.destruido){
                     this.image = new Image();
-                    this.image.src = "files/img/roca.png"; // Asegúrate de que la ruta sea correcta
+                    this.image.src = "files/img/roca.png";
                 }else{
                     this.image = new Image();
-                    this.image.src = "files/img/vacio.png"; // Asegúrate de que la ruta sea correcta
+                    this.image.src = "files/img/vacio.png";
                 }
             } else {
                 this.image = new Image();
-                this.image.src = "files/img/metal.png"; // Asegúrate de que la ruta sea correcta
+                this.image.src = "files/img/metal.png"; 
             }
         }
     
@@ -138,6 +138,7 @@
             this.frames = 90; // Número de cuadros de animación
             this.currentFrame = 0;
             this.explosion = false;
+            this.explotada = false;
             this.explosionDelay = 1000; // Retraso de 1 segundo (1000 ms) antes de la explosión
             this.explosionTime = 0; // Tiempo en el que ocurrió la explosión            
         }
@@ -145,7 +146,9 @@
         update() {
             if (!this.explosion) {
                 this.currentFrame++;
-    
+                if(this.currentFrame==this.frames-5){
+                   this. explotada=true;
+                }
                 if (this.currentFrame === this.frames) {
                     // Marca la bomba como explotada y registra el tiempo de explosión
                     this.explosion = true;
@@ -167,7 +170,7 @@
 
             setTimeout(()=>{
 
-                for (let i = 0; i < 2; i++) {
+                for (let i = 0; i < 1; i++) {
                     explosionX += dx * 40;
                     explosionY += dy * 40;
             
@@ -200,9 +203,6 @@
 
         }
         
-        
-        
-    
     }
 
     //OBJETOS DECLARADOS
@@ -323,7 +323,10 @@ function verificarColisiones() {
                     crearExplosionesAlrededorDeBomba(bombaActual);
                 } else {                        
                 }
-               pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); // 40 es el tamaño de la explosión
+                if(bombaActual.explotada==true  ){
+                    pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); // 40 es el tamaño de la explosión
+
+                }
             }
         } else {
             ctx.fillStyle = "Black";
