@@ -14,6 +14,7 @@
 
 
 <body style="background-color: black;">
+
 </body>
 
 
@@ -32,7 +33,11 @@
     imagenBomba.src= "files/img/bomba.png";
     var imagenExplosion = new Image();
     imagenExplosion.src= "files/img/boom.png";
+
+    let tiempoTotalSegundos = 0;
+    const temporizadorElement = document.getElementById("temporizador");
     
+        
     
     
     //Gameplay
@@ -187,9 +192,7 @@
                         }
                     }
             
-                    // Dibuja la explosión en esa posición
-                    ctx.fillStyle = "red"; // Color de la explosión
-                    ctx.fillRect(explosionX + 12, explosionY + 15, 20, 20); // Tamaño del cuadro rojo
+
             
                     // Verifica si la explosión alcanza al jugador
                     if (explosionX === playerX && explosionY === playerY) {
@@ -331,9 +334,9 @@ function verificarColisiones() {
         } else {
             ctx.fillStyle = "Black";
             ctx.font = "30px Arial";
-            ctx.fillText("P A U S A ", 180, 250);
+            ctx.fillText("P A U S A ", canvas.width/2-90,canvas.height/2);
             ctx.fillStyle = "rgba(138, 196, 172,0.1)";
-            ctx.fillRect(0, 0, 500, 500);
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
     }
     
@@ -404,10 +407,6 @@ function crearExplosionesAlrededorDeBomba(bomba) {
     bomba.crearExplosionEnDireccion(0, 1); // Abajo
     bomba.crearExplosionEnDireccion(-1, 0); // Izquierda
     bomba.crearExplosionEnDireccion(1, 0); // Derecha
-    
-    ctx.fillStyle = "red";
-   // ctx.fillRect(bomba.x+15 , bomba.y+15 , 20, 20);
-    // Programar la eliminación de las explosiones después de 1 segundo (1000 milisegundos)
 
 }
 
@@ -510,6 +509,9 @@ function eliminarExplosiones(explosiones) {
         repaint();
         if (!pause) {
             // HUD SI NO HAY PAUSA
+            dibujarTemporizador();
+            dibujarIntrucciones();
+         //   dibujarIntrucciones();
         }
     
         window.requestAnimationFrame(update);
@@ -528,6 +530,7 @@ function eliminarExplosiones(explosiones) {
             };
     }());
     window.requestAnimationFrame(update); 
+    
 
     function eliminarBomba() {
         bombaActual = null;
@@ -571,6 +574,32 @@ function eliminarExplosiones(explosiones) {
     }
     
     
-    
+    function actualizarTemporizador() {
+        tiempoTotalSegundos++;
+        temporizadorElement.textContent = `Tiempo: ${formatearTiempo(tiempoTotalSegundos)}`;
+    }
+
+    function formatearTiempo(tiempo) {
+        const minutos = Math.floor(tiempo / 60);
+        const segundos = tiempo % 60;
+        const minutosFormateados = minutos < 10 ? `0${minutos}` : minutos;
+        const segundosFormateados = segundos < 10 ? `0${segundos}` : segundos;
+        return `${minutosFormateados}:${segundosFormateados}`;
+    }
+
+    function dibujarTemporizador() {
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText(`Tiempo: ${formatearTiempo(tiempoTotalSegundos)}`, canvas.width-200, 40);
+    }
+
+    function dibujarIntrucciones() {
+        ctx.fillStyle = "white";
+        ctx.font = "20px Arial";
+        ctx.fillText("tiempo; ", canvas.width-200, 50);
+    }
+    window.onload = function () {
+        setInterval(actualizarTemporizador, 1000); // Actualizar cada segundo (1000 ms)
+    };
 </script>
 </html>
