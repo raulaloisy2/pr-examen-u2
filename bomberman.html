@@ -33,6 +33,7 @@
     var ctx = canvas.getContext('2d');
     var musica = document.getElementById('miAudio');
     var sonidoBomba = document.getElementById('miBomba');
+    var sonidoMuerte = document.getElementById('miMuerte');
     
     var imagenPlayer = new Image();
     imagenPlayer.src= "files/img/isaac.png";
@@ -61,7 +62,7 @@
 
     var playerX=40 , playerY=40;
     var pause = false;
-    var speed = 2;
+    var speed = 3;
     var dir=0;
     var bombaActual = null;
     let ultimaBomba = null;
@@ -162,7 +163,8 @@
             this.explosion = false;
             this.explotada = false;
             this.explosionDelay = 1200; // Retraso de 1 segundo (1000 ms) antes de la explosión
-            this.explosionTime = 0; // Tiempo en el que ocurrió la explosión            
+            this.explosionTime = 0; // Tiempo en el que ocurrió la explosión        
+            this.explosionTerminada = false;    
         }
     
         update() {
@@ -186,40 +188,48 @@
 
 
         crearExplosionEnDireccion(dx, dy) {
-
             let explosionX = this.x;
             let explosionY = this.y;
-
-
-            setTimeout(()=>{
-
-                for (let i = 0; i < 15; i++) {
+        
+            setTimeout(() => {
+                for (let i = 0; i < 1; i++) {
                     explosionX += dx * 40;
                     explosionY += dy * 40;
-            
+        
+                    // Verifica si la explosión alcanza al jugador
+                    if (
+                        explosionX + 15 > playerX &&
+                        explosionX < playerX + 15 &&
+                        explosionY + 10 > playerY &&
+                        explosionY < playerY + 30
+                    ) {
+                        // El jugador ha sido alcanzado por la explosión
+                        sonidoMuerte.play();
+                        playerX = 40;
+                        playerY = 40;
+                        console.log("¡Te alcanzó!");                    
+                    }
+                    if (!bombasExplotadas.some((bomba) => bomba.x === this.x && bomba.y === this.y)) {
+                        bombasExplotadas.push({ x: this.x, y: this.y, explosionTime: Date.now() });
+                    }
+        
                     // Verifica si la explosión alcanza una pared rompible en la posición actual
                     const paredActual = buscarPared(explosionX, explosionY);
-            
+        
                     if (paredActual && paredActual.rompible) {
                         if (!paredActual.destruido) {
                             // Marca la pared actual como destruida
                             paredActual.destruido = true;
-            
+        
                             // Cambia la imagen de la pared de roca a vacío
                             paredActual.image.src = "files/img/vacio.png"; // Asegúrate de que la ruta sea correcta
                         }
                     }
-            
-
-            
-                    // Verifica si la explosión alcanza al jugador
-                    if (explosionX === playerX && explosionY === playerY) {
-                        // El jugador ha sido alcanzado por la explosión, puedes hacer algo aquí
-                        console.log("te pegó");
-                    }
                 }
-
-            },2000);
+        
+                // Establece explosionTerminada en true después de completar la explosión
+                this.explosionTerminada = true;
+            }, 2000);
         
 
         }
@@ -238,7 +248,6 @@
     
         // Método para comprobar la colisión con el jugador
         colisionConSalida(player) {
-            console.log(player.x)
 
 
                 if (playerX + player.w > this.x && 
@@ -271,6 +280,7 @@
     let walls = []
     paredesOrilla(walls);
     paredesJuego(walls);
+    const bombasExplotadas = [];
     var bomba = null;
     //const salida = crearSalidaDebajoDeParedRompible(walls);    
     var salida = generarSalidaAleatoria();
@@ -489,11 +499,19 @@ function verificarColisiones() {
 });
 
 function crearExplosionesAlrededorDeBomba(bomba) {
-    bomba.crearExplosionEnDireccion(0, -1); // Arriba
-    bomba.crearExplosionEnDireccion(0, 1); // Abajo
-    bomba.crearExplosionEnDireccion(-1, 0); // Izquierda
-    bomba.crearExplosionEnDireccion(1, 0); // Derecha
+    // Direcciones de explosión: arriba, abajo, izquierda, derecha
+    const direcciones = [{ dx: 0, dy: -1 }, { dx: 0, dy: 1 }, { dx: -1, dy: 0 }, { dx: 1, dy: 0 }];
 
+    for (const direccion of direcciones) {
+        // Calcula la posición de la próxima explosión en esta dirección
+        let explosionX = bomba.x + direccion.dx * 40;
+        let explosionY = bomba.y + direccion.dy * 40;
+
+        // Verifica si esta celda ya fue alcanzada por una explosión anterior
+        if (!bombasExplotadas.some((bomba) => bomba.x === explosionX && bomba.y === explosionY)) {
+            bomba.crearExplosionEnDireccion(direccion.dx, direccion.dy);
+        }
+    }
 }
 
 
@@ -501,13 +519,12 @@ function eliminarExplosiones(explosiones) {
     // Elimina las explosiones pintadas y del arreglo de explosiones (si es necesario)
     for (let i = 0; i < explosiones.length; i++) {
         const explosion = explosiones[i];
-        ctx.fillStyle = "#6F5B52"; // Color del fondo
-
-        ctx.fillRect(explosion.x - 5, explosion.y - 5, 35, 35);
-
-    
-        explosiones.splice(i, 1);
-        i--; 
+        if (explosion.explosionTerminada) {
+            ctx.fillStyle = "#6F5B52"; // Color del fondo
+            ctx.fillRect(explosion.x - 5, explosion.y - 5, 35, 35);
+            explosiones.splice(i, 1);
+            i--;
+        }
     }
 }
 
@@ -575,7 +592,7 @@ function eliminarExplosiones(explosiones) {
                     crearExplosionesAlrededorDeBomba(bombaActual);
         
                     if (bombaActual.framesElapsed >= bombaActual.framesToShowExplosion) {
-                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); // 40 es el tamaño de la explosión
+                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 50); // 40 es el tamaño de la explosión
                     }
         
                     bombaActual = null;
@@ -631,6 +648,10 @@ function eliminarExplosiones(explosiones) {
     }
 
     function pintarExplosion(ctx, x, y, size) {
+        
+        if (bombaActual.explosionTerminada) {
+            return;
+        }
         const explosionImage = new Image();
         explosionImage.src = "files/img/boom.png"; // Ruta de la imagen de explosión
     
