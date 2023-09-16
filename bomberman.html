@@ -14,16 +14,14 @@
     <canvas id="mycanvas"  width="1000" height="600"> </canvas>
     <canvas id="temporizador-dentro" width="1000" height="600"> </canvas>
 
-<audio   id="miAudio">
-     <source src="files/sounds/InnocenceGlitched.mp3" type="audio/mpeg"> </audio>
-<audio   id="miBomba">
-     <source src="files/sounds/bomba.mp3" type="audio/mpeg"> </audio>
+    <audio   id="miAudio">
+        <source src="files/sounds/InnocenceGlitched.mp3" type="audio/mpeg"> </audio>
+    <audio   id="miBomba">
+        <source src="files/sounds/bomba.mp3" type="audio/mpeg"> </audio>
      <div id="temporizador-fuera">Tiempo: 00:00</div>
+    <audio   id="miMuerte">
+         <source src="files/sounds/hurt.mp3" type="audio/mpeg"> </audio>
 </body>
-<audio   id="miMuerte">
-    <source src="files/sounds/hurt.mp3" type="audio/mpeg"> </audio>
-
-
 
 
 <script>
@@ -42,16 +40,14 @@
     var imagenExplosion = new Image();
     imagenExplosion.src= "files/img/boom.png";
     var imagenSalida = new Image();
-    imagenSalida.src = "files/img/sotano.png";
+    imagenSalida.src = "files/img/like.png";
+    var imagenFinal = new Image();
+    imagenFinal.src = "files/img/like.png";
 
     let tiempoTotalSegundos = 0;
     let tiempoDetenido = false; 
     const temporizadorElement = document.getElementById("temporizador-fuera"); 
 
-    
-        
-    
-    
     //Gameplay
     const coordenadasSalida = [
     { x: 400, y:  200 }, // Coordenada 0
@@ -86,7 +82,6 @@
         this.rompible = rompible;
         this.destruido = false;
 
-       
             if (this.rompible) {
                // this.destruido=true;
                 if(!this.destruido){
@@ -102,15 +97,12 @@
             }
         }
     
-
-    
         pintar(ctx) {
             // Verifica que la imagen se haya cargado correctamente antes de intentar dibujarla
             if (this.image.complete) {
                 ctx.drawImage(this.image, this.x, this.y, 45, 45);
             }
         }
-
         //EVITA ATRAVESAR ELEMENTOS
         colisionConCuadro(player) {
 
@@ -158,12 +150,12 @@
             this.x = x;
             this.y = y;
             this.size = 35;
-            this.frames = 90; // Número de cuadros de animación
+            this.frames = 90;
             this.currentFrame = 0;
             this.explosion = false;
             this.explotada = false;
-            this.explosionDelay = 1200; // Retraso de 1 segundo (1000 ms) antes de la explosión
-            this.explosionTime = 0; // Tiempo en el que ocurrió la explosión        
+            this.explosionDelay = 1200; 
+            this.explosionTime = 0; 
             this.explosionTerminada = false;    
         }
     
@@ -186,7 +178,6 @@
             this.explosion = false;
         }
 
-
         crearExplosionEnDireccion(dx, dy) {
             let explosionX = this.x;
             let explosionY = this.y;
@@ -198,10 +189,10 @@
         
                     // Verifica si la explosión alcanza al jugador
                     if (
-                        explosionX + 15 > playerX &&
-                        explosionX < playerX + 15 &&
-                        explosionY + 10 > playerY &&
-                        explosionY < playerY + 30
+                        explosionX + 25 > playerX &&
+                        explosionX < playerX + 25 &&
+                        explosionY + 30 > playerY &&
+                        explosionY - 30 <playerY 
                     ) {
                         // El jugador ha sido alcanzado por la explosión
                         sonidoMuerte.play();
@@ -212,7 +203,6 @@
                     if (!bombasExplotadas.some((bomba) => bomba.x === this.x && bomba.y === this.y)) {
                         bombasExplotadas.push({ x: this.x, y: this.y, explosionTime: Date.now() });
                     }
-        
                     // Verifica si la explosión alcanza una pared rompible en la posición actual
                     const paredActual = buscarPared(explosionX, explosionY);
         
@@ -226,7 +216,6 @@
                         }
                     }
                 }
-        
                 // Establece explosionTerminada en true después de completar la explosión
                 this.explosionTerminada = true;
             }, 2000);
@@ -243,33 +232,25 @@
             this.w = 30;
             this.h = 30;
             this.image = new Image();
-            this.image.src = "files/img/sotano.png"; // Asegúrate de que la ruta sea correcta
+            this.image.src = "files/img/sotano.png"; 
         }
     
         // Método para comprobar la colisión con el jugador
         colisionConSalida(player) {
 
-
                 if (playerX + player.w > this.x && 
                 playerX < this.x + this.w &&
                 playerY + player.h > this.y &&
                 playerY < this.y + this.h) {
-                // Colisión detectada
- 
                 return true;
             }
-            
-            
-
-            return false; // No hay colisión
+            return false; 
         }
     
         // Método para dibujar la salida en el canvas
         pintar(ctx) {
-            // Verifica que la imagen se haya cargado correctamente antes de intentar dibujarla
             if (this.image.complete) {
                 ctx.drawImage(this.image, this.x, this.y, this.w, this.h);
-                
             }
         }
     }
@@ -282,14 +263,9 @@
     paredesJuego(walls);
     const bombasExplotadas = [];
     var bomba = null;
-    //const salida = crearSalidaDebajoDeParedRompible(walls);    
     var salida = generarSalidaAleatoria();
 
-
-
-
 //FUNCIONES 
-
 //FONDO
     function drawBackground(){
         
@@ -301,7 +277,7 @@
     }
 
     function paredesOrilla(walls) {
-        const borderWidth = 40; // Ancho de la pared
+        const borderWidth = 40; 
         const canvasWidth = canvas.width;
         const canvasHeight = canvas.height;
         // Pintar pared superior
@@ -339,10 +315,9 @@
                 const cuadriculaXIndex = Math.floor(x / borderWidth) % cuadriculaX;
                 const cuadriculaYIndex = Math.floor(y / borderWidth) % cuadriculaY;
     
-                // Comprueba si estamos en una fila par o impar para alternar rompibles y no rompibles
+                // Comprueba si  fila par o impar para alternar rompibles y no rompibles
                 const enFilaPar = cuadriculaYIndex % 2 === 0;
     
-                // Establece rompibles en función de la lógica deseada
                 const rompible = enFilaPar ? rompibles : true;
     
                 walls.push(new GenerarPared(x, y, rompible));
@@ -352,11 +327,9 @@
             }
         }
     }
-    
-    // Para crear la disposición de bloques al estilo de Bomberman:
+   //Crea  las paredes con el arreglo walls
     paredesJuego(walls);
-    
-    
+
 //VERIFICA EL ARREGLO DE WALLS SI UNO DE ELLOS TIENE UNA COLISIÓN
 function verificarColisiones() {
     for (let i = 0; i < walls.length; i++) {
@@ -365,7 +338,6 @@ function verificarColisiones() {
         }
     }
 }
-
 
     function drawBackground(){
         
@@ -395,21 +367,18 @@ function verificarColisiones() {
                     if (!bombaActual.explosion) {
                         ultimaBomba = bombaActual;
                         ctx.drawImage(imagenBomba, bombaActual.x, bombaActual.y, bombaActual.size, bombaActual.size);
-                        //
+                        
                         crearExplosionesAlrededorDeBomba(bombaActual);
                     } else {
                     }
                     if (bombaActual.explotada == true) {
-                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); // 40 es el tamaño de la explosión
+                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); 
                     }
                 }
-        
-                // Verificar y dibujar la salida si existe
-
                 dibujarTemporizador();
                 dibujarIntrucciones();
 
-            } else {
+            } else {                
                 ctx.fillStyle = "Black";
                 ctx.font = "30px Arial";
                 ctx.fillText("P A U S A ", canvas.width / 2 - 90, canvas.height / 2);
@@ -417,16 +386,15 @@ function verificarColisiones() {
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
 
-
-
-
             if (final==true){
-    
-                ctx.fillStyle = "rgba(138, 196, 172)";
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "rgba(227, 85, 21,1)";
+               ctx.fillRect(250,150, canvas.width/2, canvas.height/2);
                 ctx.fillStyle = "Black";
                 ctx.font = "30px Arial";
-                ctx.fillText("FINAL", canvas.width / 2 - 90, canvas.height / 2);
+                ctx.fillText("FELICIDADES", canvas.width / 2 - 100, canvas.height / 2+30);
+                ctx.fillText("¡Haz encontrado la salida!", canvas.width / 2 - 180, canvas.height / 2+60);
+                ctx.drawImage(imagenFinal, 450,200,100,100);
+
                 dibujarTemporizador();
                 detenerTiempo();
             }
@@ -434,7 +402,6 @@ function verificarColisiones() {
     //Pintar Fondo
     drawBackground();
 
-//
     function buscarPared(x, y) {
         let i;
         for ( i = 0; i < walls.length; i++) {
@@ -455,7 +422,7 @@ function verificarColisiones() {
             return;
         }
        
-        //musica.play();        
+        musica.play();        
         console.log(e.keyCode);
 
         if (e.keyCode === 69 && bombaActual === null) {        
@@ -541,7 +508,6 @@ function eliminarExplosiones(explosiones) {
                         }
                     }
                     break;
-    
                 case 83:
                     if (pause == false) {
                         playerY += speed;
@@ -551,7 +517,6 @@ function eliminarExplosiones(explosiones) {
                         }
                     }
                     break;
-    
                     case 68:
                     if (!pause) {
                         playerX += speed;
@@ -560,8 +525,6 @@ function eliminarExplosiones(explosiones) {
                         }
                     }
                     break;
-                
-    
                 case 65:
                     if (pause == false) {
                         playerX -= speed;
@@ -571,7 +534,6 @@ function eliminarExplosiones(explosiones) {
                         }
                     }
                     break;
-    
                 case 81:
                     console.log("Pausa");
                     if (!pause) {
@@ -592,26 +554,18 @@ function eliminarExplosiones(explosiones) {
                     crearExplosionesAlrededorDeBomba(bombaActual);
         
                     if (bombaActual.framesElapsed >= bombaActual.framesToShowExplosion) {
-                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 50); // 40 es el tamaño de la explosión
-                    }
-        
+                        pintarExplosion(ctx, ultimaBomba.x, ultimaBomba.y, 40); 
+                    }       
                     bombaActual = null;
-                    
                     // Verifica las colisiones después de que la bomba ha explotado
                     verificarColisiones();
-
                     // Elimina la bomba después de la explosión
                     eliminarBomba();
                 } else {
                     ctx.drawImage(imagenBomba, bombaActual.x, bombaActual.y, bombaActual.size, bombaActual.size);
                 }
             }
-
-           
-            
         }
-    
-    
         verificarColisiones();
         salida.colisionConSalida(player)
         if(salida.colisionConSalida(player)==true){
@@ -619,17 +573,8 @@ function eliminarExplosiones(explosiones) {
             detenerTiempo();
         }
         repaint();
-        if (!pause) {
-            // HUD SI NO HAY PAUSA
-
-         //   dibujarIntrucciones();
-        }
-    
         window.requestAnimationFrame(update);
     }
-    
-
-
 
     //REQUEST ANIMATION
     window.requestAnimationFrame = (function () {
@@ -642,7 +587,6 @@ function eliminarExplosiones(explosiones) {
     }());
     window.requestAnimationFrame(update); 
     
-
     function eliminarBomba() {
         bombaActual = null;
     }
@@ -653,7 +597,7 @@ function eliminarExplosiones(explosiones) {
             return;
         }
         const explosionImage = new Image();
-        explosionImage.src = "files/img/boom.png"; // Ruta de la imagen de explosión
+        explosionImage.src = "files/img/boom.png"; 
     
         // Verificar si hay una pared en las posiciones de la explosión
         const arribaPared = buscarPared(x, y - size);
@@ -687,7 +631,6 @@ function eliminarExplosiones(explosiones) {
             ctx.drawImage(explosionImage, 0, 0, 64, 64, x + size, y, size, size);
         }
     }
-    
     
     function actualizarTemporizador() {
         if (!tiempoDetenido) {
@@ -745,16 +688,12 @@ function crearSalidaDebajoDeParedRompible(walls) {
             }
         }
     }
-    return null; // No se pudo crear una salida debajo de ninguna pared rompible
+    return null; 
 }
-
-
-
 function generarSalidaAleatoria() {
     const indiceAleatorio = Math.floor(Math.random() * 4);
     const coordenadaSeleccionada = coordenadasSalida[indiceAleatorio];
     const salida = new SalidaJuego(coordenadaSeleccionada.x, coordenadaSeleccionada.y);
-    
     return salida;
 }
     window.onload = function () {
